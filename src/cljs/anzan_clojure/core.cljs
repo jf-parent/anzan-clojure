@@ -33,6 +33,9 @@
 (def last-answer-correct (reagent/atom 0))
 (def running (reagent/atom false))
 
+(reset! current-config {:number-of-digits @number-of-digits :number-of-rows @number-of-rows
+                        :number-shown-ms @number-shown-ms :timeout @timeout})
+
 ;; -------------------------
 ;; Functions
 
@@ -47,9 +50,10 @@
 (defn main-loop []
   (if (< @current-row (@current-config :number-of-rows))
     (do (reset! current-number (get-number (@current-config :number-of-digits)))
+        (when-not (< @current-row (count @numbers))
+          (swap! numbers conj @current-number))
         (swap! current-row inc)
         (reset! current-answer (+ (int @current-answer) (int @current-number)))
-        (swap! numbers conj @current-number)
         (js/setTimeout hide-number (@current-config :number-shown-ms))
         (js/setTimeout main-loop (@current-config :timeout)))
     (do (reset! current-row 0)

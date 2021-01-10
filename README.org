@@ -1,0 +1,16 @@
+* Anzan
+  
+[[resources/anzan.png]]
+
+#+BEGIN_SRC bash
+  git clone https://github.com/jf-parent/anzan-clojure
+  cd anzan-clojure
+  lein run # open http://localhost:3111
+#+END_SRC
+
+* TODO
+  - [X] Addition
+  - [ ] Subtraction
+  - [ ] Multiplication
+  - [ ] Division
+  - [ ] Dictation
