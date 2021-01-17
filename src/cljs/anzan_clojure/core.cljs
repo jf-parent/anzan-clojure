@@ -39,13 +39,24 @@
 ;; -------------------------
 ;; Functions
 
+(defn random-number [nb-of-digit]
+  (str (inc (rand-int 9)) (apply str (repeatedly (dec nb-of-digit) #(rand-int 9)))))
+
+(defn exp [x n]
+  (reduce * (repeat n x)))
+
 (defn get-number [nb-of-digit]
   (if (< @current-row (count @numbers))
     (nth @numbers @current-row)
-    (apply str (repeatedly nb-of-digit #(inc (rand-int 9))))))
+    (random-number nb-of-digit)))
 
 (defn hide-number []
   (reset! current-number 0))
+
+(defn adjust-number-shown-ms []
+  (if (= (@current-config :number-shown-ms) (@current-config :timeout))
+    (- (@current-config :number-shown-ms) 100)
+    (@current-config :number-shown-ms)))
 
 (defn main-loop []
   (if (< @current-row (@current-config :number-of-rows))
@@ -54,7 +65,7 @@
           (swap! numbers conj @current-number))
         (swap! current-row inc)
         (reset! current-answer (+ (int @current-answer) (int @current-number)))
-        (js/setTimeout hide-number (@current-config :number-shown-ms))
+        (js/setTimeout hide-number (adjust-number-shown-ms))
         (js/setTimeout main-loop (@current-config :timeout)))
     (do (reset! current-row 0)
         (reset! last-answer-correct 0)
@@ -161,7 +172,7 @@
              :value @number-shown-ms
              :min 500
              :max 5000
-             :step 500
+             :step 100
              :on-change #(do (reset! number-shown-ms (int (-> % .-target .-value)))
                              (swap! current-config assoc :number-shown-ms @number-shown-ms))}]]
    [:p "Timeout: "
@@ -169,7 +180,7 @@
              :value @timeout
              :min 500
              :max 5000
-             :step 500
+             :step 100
              :on-change #(do (reset! timeout (int (-> % .-target .-value)))
                              (swap! current-config assoc :timeout @timeout))}]]])
 
