@@ -93,12 +93,15 @@
   (main-loop))
 
 (defn validate-answer []
-  (swap! history-total-question inc)
-  (reset! ask-answer false)
-  (if (= (int @user-answer) @current-answer)
-    (do (reset! last-answer-correct 1)
-        (swap! history-total-right-answer inc))
-    (do (reset! last-answer-correct -1))))
+  (if (= @user-answer "")
+    (start-main-loop)
+    (do
+      (reset! ask-answer false)
+      (swap! history-total-question inc)
+      (if (= (int @user-answer) @current-answer)
+        (do (reset! last-answer-correct 1)
+            (swap! history-total-right-answer inc))
+        (do (reset! last-answer-correct -1))))))
 
 (defn global-handler [e]
   (when (= "Enter" (.-code e))
