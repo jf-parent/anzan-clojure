@@ -40,7 +40,7 @@
 ;; Functions
 
 (defn random-number [nb-of-digit]
-  (str (inc (rand-int 9)) (apply str (repeatedly (dec nb-of-digit) #(rand-int 9)))))
+  (str (inc (rand-int 9)) (apply str (repeatedly (dec nb-of-digit) #(rand-int 10)))))
 
 (defn exp [x n]
   (reduce * (repeat n x)))
