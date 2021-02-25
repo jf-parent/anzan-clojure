@@ -32,6 +32,7 @@
 (def history-total-right-answer (reagent/atom 0))
 (def last-answer-correct (reagent/atom 0))
 (def running (reagent/atom false))
+(def eff-config (atom {}))
 
 (reset! current-config {:number-of-digits @number-of-digits :number-of-rows @number-of-rows
                         :number-shown-ms @number-shown-ms :timeout @timeout})
@@ -54,19 +55,22 @@
   (reset! current-number 0))
 
 (defn adjust-number-shown-ms []
-  (if (= (@current-config :number-shown-ms) (@current-config :timeout))
-    (- (@current-config :number-shown-ms) 100)
-    (@current-config :number-shown-ms)))
+  (- (@current-config :number-shown-ms) 100))
+
+;; (defn adjust-number-shown-ms []
+;;   (if (= (@current-config :number-shown-ms) (@current-config :timeout))
+;;     (- (@current-config :number-shown-ms) 100)
+;;     (@current-config :number-shown-ms)))
 
 (defn main-loop []
-  (if (< @current-row (@current-config :number-of-rows))
-    (do (reset! current-number (get-number (@current-config :number-of-digits)))
+  (if (< @current-row (@eff-config :number-of-rows))
+    (do (reset! current-number (get-number (@eff-config :number-of-digits)))
         (when-not (< @current-row (count @numbers))
           (swap! numbers conj @current-number))
         (swap! current-row inc)
         (reset! current-answer (+ (int @current-answer) (int @current-number)))
         (js/setTimeout hide-number (adjust-number-shown-ms))
-        (js/setTimeout main-loop (@current-config :timeout)))
+        (js/setTimeout main-loop (@eff-config :timeout)))
     (do (reset! current-row 0)
         (reset! last-answer-correct 0)
         (reset! running false)
@@ -84,6 +88,7 @@
   (main-loop))
 
 (defn start-main-loop []
+  (reset! eff-config @current-config)
   (reset! current-answer 0)
   (reset! last-answer-correct 0)
   (reset! running true)
@@ -178,14 +183,16 @@
              :step 100
              :on-change #(do (reset! number-shown-ms (int (-> % .-target .-value)))
                              (swap! current-config assoc :number-shown-ms @number-shown-ms))}]]
-   [:p "Timeout: "
-    [:input {:type "number"
-             :value @timeout
-             :min 500
-             :max 5000
-             :step 100
-             :on-change #(do (reset! timeout (int (-> % .-target .-value)))
-                             (swap! current-config assoc :timeout @timeout))}]]])
+   ])
+
+;; [:p "Timeout: "
+;;  [:input {:type "number"
+;;           :value @timeout
+;;           :min 500
+;;           :max 5000
+;;           :step 100
+;;           :on-change #(do (reset! timeout (int (-> % .-target .-value)))
+;;                           (swap! current-config assoc :timeout @timeout))}]]
 
 (defn home-page []
   (fn []
