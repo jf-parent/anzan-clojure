@@ -21,7 +21,6 @@
 (def number-of-digits (reagent/atom (:number-of-digits @current-config 3)))
 (def number-of-rows (reagent/atom (:number-of-rows @current-config 3)))
 (def number-shown-ms (reagent/atom (:number-shown-ms @current-config 1000)))
-(def timeout (reagent/atom (:timeout @current-config 1000)))
 (def ask-answer (reagent/atom false))
 (def user-answer (reagent/atom ""))
 (def numbers (reagent/atom []))
@@ -34,8 +33,14 @@
 (def running (reagent/atom false))
 (def eff-config (atom {}))
 
+;; (defn atom-watcher [key atom old-state new-state]
+;;   "Add atom watcher helper function."
+;;   (prn (str "[DEBUG]" key " " old-state " -> " new-state)))
+
+;; (add-watch number-shown-ms :number-shown-ms atom-watcher)
+
 (reset! current-config {:number-of-digits @number-of-digits :number-of-rows @number-of-rows
-                        :number-shown-ms @number-shown-ms :timeout @timeout})
+                        :number-shown-ms @number-shown-ms})
 
 ;; -------------------------
 ;; Functions
@@ -57,11 +62,6 @@
 (defn adjust-number-shown-ms []
   (- (@current-config :number-shown-ms) 100))
 
-;; (defn adjust-number-shown-ms []
-;;   (if (= (@current-config :number-shown-ms) (@current-config :timeout))
-;;     (- (@current-config :number-shown-ms) 100)
-;;     (@current-config :number-shown-ms)))
-
 (defn main-loop []
   (if (< @current-row (@eff-config :number-of-rows))
     (do (reset! current-number (get-number (@eff-config :number-of-digits)))
@@ -70,7 +70,7 @@
         (swap! current-row inc)
         (reset! current-answer (+ (int @current-answer) (int @current-number)))
         (js/setTimeout hide-number (adjust-number-shown-ms))
-        (js/setTimeout main-loop (@eff-config :timeout)))
+        (js/setTimeout main-loop (@eff-config :number-shown-ms)))
     (do (reset! current-row 0)
         (reset! last-answer-correct 0)
         (reset! running false)
@@ -184,15 +184,6 @@
              :on-change #(do (reset! number-shown-ms (int (-> % .-target .-value)))
                              (swap! current-config assoc :number-shown-ms @number-shown-ms))}]]
    ])
-
-;; [:p "Timeout: "
-;;  [:input {:type "number"
-;;           :value @timeout
-;;           :min 500
-;;           :max 5000
-;;           :step 100
-;;           :on-change #(do (reset! timeout (int (-> % .-target .-value)))
-;;                           (swap! current-config assoc :timeout @timeout))}]]
 
 (defn home-page []
   (fn []
